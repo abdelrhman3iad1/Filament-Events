@@ -28,7 +28,7 @@ return new class extends Migration
                 ->constrained('categories')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-            $table->string('image');
+            $table->string('image')->nullable();
             $table->unsignedBigInteger('quantity');
             $table->decimal('price',10,2);
             $table->boolean('is_visible')->default(false);

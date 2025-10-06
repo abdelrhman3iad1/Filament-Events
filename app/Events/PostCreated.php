@@ -16,7 +16,7 @@ class PostCreated implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
 
-    public string $queue = 'emails';
+    // public string $queue = 'emails';
 
 
     public function __construct(

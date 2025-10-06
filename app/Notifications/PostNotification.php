@@ -8,26 +8,21 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Mail\Mailable;
-use App\Mail\NewPostNotification;
+use Illuminate\Support\Facades\Log;
+
 class PostNotification extends Notification implements ShouldQueue
 
 {
-
     use Queueable;
-
-    public function queue(){
-        return 'emails';
-    }
-
+    // public $queue ="emails";
     /**
      * Create a new notification instance.
      */
-    public function __construct(public Post $post, public User $user)
+    public function __construct(public Post $post, public User $user ,public string $queue1)
     {
-        //
+        $this->onQueue('emails');
     }
-
+    
     /**
      * Get the notification's delivery channels.
      *
@@ -42,10 +37,20 @@ class PostNotification extends Notification implements ShouldQueue
      * Get the mail representation of the notification.
      */
     
-    public function toMail(object $notifiable): Mailable
+    
+    public function toMail(object $notifiable): MailMessage
     {
-        return (new NewPostNotification($this->post))
-            ->to($notifiable->email);
+        // sleep(3);
+          Log::driver('email-queue')->info('Queueing PostNotification', [
+            'pid' => getmypid(),
+            'user' => $this->user->id,
+            'queue'=> $this->queue1,
+        ]);
+          return (new MailMessage)
+            ->subject("New Post: {$this->post->title}")
+            ->line('A new post has been published.')
+            ->action('View Post', url("/posts/{$this->post->id}"))
+            ->line('Thank you for using our application!');
     }
 
     /**

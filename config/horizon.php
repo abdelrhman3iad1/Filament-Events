@@ -221,12 +221,12 @@ return [
 
             'emails-supervisor'=>[
                 'connection'=> 'redis',
-                'queue' => ['emails'], 
-                'balance'=>'auto',
+                'queue' => ['emails'],
                 'minProcesses' => 1,
+                'balance'=>'auto',
                 'maxProcesses' => 10,
-                'tries' => 1,
-
+                'tries' => 2,
+                // 'autoScalingStrategy' => 'time',
             ]
         ],
     ],

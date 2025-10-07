@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Events\PostCreated;
-use App\Listeners\SendEmails;
+use App\Listeners\SendPostEmails;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,9 +22,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Event::listen(
-            PostCreated::class,
-            SendEmails::class
-        );
+
     }
 }

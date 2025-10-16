@@ -23,13 +23,9 @@ class SendPostNotification implements ShouldQueue
         $post = $event->post;
 
 
-        User::/*where('id', '!=', $post->user_id)->*/chunk(50, function ($users) use ($post) {
-            foreach ($users as $user) {
-                $user->notify(
-                    (new PostCreatedNotification($post))
-                );
-            }
-        });
+        $post->notify(
+            (new PostCreatedNotification($post))
+        );
     }
       
 }

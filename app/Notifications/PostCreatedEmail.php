@@ -32,14 +32,9 @@ class PostCreatedEmail extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        sleep(5);
-          Log::driver('email-queue')->info('Queueing PostNotification', [
-            'pid' => getmypid(),
-            'user' => $this->user->id,
-        ]);
           return (new MailMessage)
             ->subject("New Post: {$this->post->title}")
-            ->view("emails.new-post",[
+            ->view("Email.new-post",[
                 "post"=>$this->post,
                 "user"=> $this->user,
             ]);

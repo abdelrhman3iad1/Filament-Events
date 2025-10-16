@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Broadcasting\PrivateChannel;
 
 class PostCreatedNotification extends Notification implements ShouldBroadcast
 {
@@ -26,11 +27,11 @@ class PostCreatedNotification extends Notification implements ShouldBroadcast
 
     public function broadcastOn(): Channel
     {
-        return new Channel('post');
+        return new Channel('posts');
     }
     public function broadcastAs(): string 
     {
-        return 'post.created';
+        return 'post-created';
     }
 
     public function broadcastQueue(): string
@@ -38,7 +39,7 @@ class PostCreatedNotification extends Notification implements ShouldBroadcast
         return 'notifications';
     }
  
-        public function toBroadcast(object $notifiable): BroadcastMessage
+    public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return (new BroadcastMessage([
             'id'=> $this->post->id,
@@ -48,7 +49,7 @@ class PostCreatedNotification extends Notification implements ShouldBroadcast
                 'id'=> $this->post->user->id,
                 'name'=> $this->post->user->name,
             ],
-        ]))->onQueue('notifications')->delay(3);
+        ]))->onQueue('notifications');
     }
 
 

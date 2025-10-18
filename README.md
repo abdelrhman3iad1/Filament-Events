@@ -1,61 +1,101 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ⚡ Filament Event-Driven Dashboard
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 📘 Overview
+This project is a **Filament SPA Dashboard** built with **Laravel**, using an **event-driven architecture** to handle post creation, email notifications, and real-time broadcasts.  
+The goal is to make the system **asynchronous, real-time, and scalable** using Laravel tools like **Octane**, **Horizon**, and **Reverb**.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## ⚙️ How It Works
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 📝 Post Creation in Filament Dashboard
+When a new post is created, Filament’s `afterCreate` hook triggers the **PostCreated** event.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 🔔 Event Trigger
+The **PostCreated** event fires two listeners:
+- **SendPostEmails** → sends emails to all users.  
+- **SendPostNotification** → sends a broadcast notification to connected users.
 
-## Learning Laravel
+### ✉️ Notifications System
+- **Emails:** Sent through Laravel’s Notification system on a dedicated `emails` queue.  
+- **Broadcasts:** Sent in real time using **Laravel Reverb** and received in the Filament dashboard via **Laravel Echo**.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### ⚡ Real-Time Dashboard Updates
+The Filament SPA listens to the `posts` channel.  
+When a new post is broadcasted, all users instantly get a Filament notification with the post details — **no page reload needed**.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# 🔄 System Flow (Lifecycle Explanation)
 
-## Laravel Sponsors
+## 📝 Post Creation through Filament Dashboard
+- The user creates a new post within the **Filament SPA dashboard**.
+- Once the post is successfully stored in the database, Filament’s **`afterCreate` hook** executes.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🚀 Event Firing (PostCreated)
+- This hook dispatches the **`PostCreated` event**, carrying the post’s data.
+- This event is the backbone of the event-driven flow, ensuring that subsequent actions are executed **asynchronously**.
 
-### Premium Partners
+## ⚙️ Listeners Execution
+The system has two dedicated listeners that respond to this event:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 1. 📨 SendPostEmails
+- Responsible for sending **email notifications** to all registered users.
+- Runs on a **separate queue** named `emails` to ensure asynchronous processing and prevent blocking the main request lifecycle.
+- Efficiently handles large user datasets by processing users in **chunks** to avoid memory overload.
 
-## Contributing
+### 2. 🔔 SendPostNotification
+- Responsible for sending **real-time broadcast notifications** using Laravel’s broadcasting system.
+- Runs on another **dedicated queue** named `notifications`, ensuring smooth separation between email and broadcast jobs.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## ✉️ Notification Dispatching
+- The **email listener** uses Laravel’s **Notification system** to send custom mail templates that include post content and author information.
+- The **broadcast listener** uses **WebSockets via Laravel Reverb** to deliver real-time notifications to connected dashboard users.
+- Both notifications are queued and executed asynchronously through **Redis workers** managed by **Laravel Horizon**.
 
-## Code of Conduct
+## ⚡ Real-time Dashboard Update
+- The **Filament dashboard** acts as a live SPA connected to the **Reverb WebSocket server** using **Laravel Echo**.
+- When a `post-created` event is broadcasted, the dashboard immediately receives it **without refreshing the page**.
+- A **dynamic in-app Filament notification** appears to all users, showing the new post’s **title, author, and content**.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 🧩 Main Tools Used
+- **Filament Dashboard** → Admin SPA with real-time notifications  
+- **Laravel Events & Listeners** → Core of the event-driven architecture  
+- **Laravel Notifications** → Sends both mail and broadcast messages  
+- **Laravel Horizon** → Manages and monitors queues for jobs and notifications  
+- **Laravel Octane (OpenSwoole)** → Improves performance and concurrency  
+- **Laravel Reverb** → Handles WebSocket broadcasting for real-time features  
+- **Laravel Echo** → Connects the Filament SPA to Reverb for live updates  
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## 🧱 Architecture Summary
+**Event:** `PostCreated`  
+**Listeners:**
+- `SendPostEmails` → queue: `emails`  
+- `SendPostNotification` → queue: `notifications`  
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+**Queues:** Managed with **Redis** and **Horizon**  
+**Real-Time Updates:** Via **Reverb + Echo connection**  
+**Dashboard:** Filament SPA with live notification rendering  
+
+---
+
+## 🚀 Key Features
+✅ Event-driven design for clean and scalable logic  
+✅ Asynchronous email and broadcast processing via queues  
+✅ Real-time UI updates without page refresh  
+✅ High performance with Laravel Octane  
+✅ Queue management and monitoring using Laravel Horizon  
+
+---
+
+## 📚 References
+- [Laravel Events](https://laravel.com/docs/events)
+- [Laravel Notifications](https://laravel.com/docs/notifications)
+- [Laravel Horizon](https://laravel.com/docs/horizon)
+- [Laravel Octane](https://laravel.com/docs/octane)
+- [Laravel Reverb](https://laravel.com/docs/reverb)
+- [Filament Documentation](https://filamentphp.com/docs)
